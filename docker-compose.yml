@@ -1,0 +1,53 @@
+version: '3.1'
+
+services:
+
+    app:
+        build: .
+        entrypoint: .docker/entrypoint.sh
+        container_name: api-reference
+        ports:
+            - "4001:4001"
+        volumes:
+            - .:/home/node/app
+        depends_on:
+            - db
+            - redis
+
+    db:
+        build: .docker/postgres
+        container_name: db-api-reference
+        restart: always
+        tty: true
+        ports:
+            - "5432:5432"
+        volumes:
+            - .docker/dbdata:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_PASSWORD=docker
+            - POSTGRES_DB=ts-api-reference
+
+    redis:
+        image: 'bitnami/redis:latest'
+        container_name: redis-api-reference
+        environment:
+            - ALLOW_EMPTY_PASSWORD=yes
+
+    pgadmin:
+        image: 'dpage/pgadmin4'
+        container_name: pgadmin-api-reference
+        tty: true
+        environment:
+            - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+            - PGADMIN_DEFAULT_PASSWORD=admin
+        ports:
+            - "8000:80"
+        depends_on:
+            - db
+
+        # db:
+        #     image: mysql
+        #     command: --default-authentication-plugin=mysql_native_password
+        #     restart: always
+        #     environment:
+        #         MYSQL_ROOT_PASSWORD: example
