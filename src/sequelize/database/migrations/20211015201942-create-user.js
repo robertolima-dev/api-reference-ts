@@ -19,6 +19,9 @@ module.exports = {
       phone: {
         type: Sequelize.STRING
       },
+      avatar: {
+        type: Sequelize.STRING
+      },
       status: {
         type: Sequelize.BOOLEAN
       },

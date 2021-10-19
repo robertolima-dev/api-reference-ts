@@ -4,12 +4,14 @@ import AppError from './middlewares/errors/AppError';
 import 'express-async-errors';
 import cors from 'cors';
 import routes from './routes'
+import uploadConfig from '../src/config/upload'
 
 const port = process.env.PORT || 4001
 const app = express()
 
 app.use(cors());
 app.use(express.json());
+app.use('/files', express.static(uploadConfig.directory))
 
 app.use(routes);
 
