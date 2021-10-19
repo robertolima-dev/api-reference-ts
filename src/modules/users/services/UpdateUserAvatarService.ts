@@ -1,10 +1,8 @@
 import { User } from "../model/User";
-import path from 'path'
 import UserRepositoy from "../repositories/sequelize/UserRepository";
 import AppError from "src/middlewares/errors/AppError";
-import uploadConfig from '../../../config/upload'
-import fs from "fs";
-
+import DiskStorageProvider from '../../../providers/StorageProvider/DiskStorageProvider'
+import redisCache from '../../../config/redis/RedisCache'
 
 interface IRequest {
     user_id: string
@@ -15,6 +13,7 @@ class UpdateUserAvatarService {
     public async execute({ user_id, avatarFilename }: IRequest): Promise<User> {
 
         const userRepositoy = new UserRepositoy()
+        const storageProvider = new DiskStorageProvider()
 
         const user = await userRepositoy.findById(user_id)
 
@@ -23,16 +22,16 @@ class UpdateUserAvatarService {
         }
 
         if(user.avatar) {
-            const userAvatarFilePath = path.join(uploadConfig.directory, user.avatar)
-            const userAvatarFileExists = await fs.promises.stat(userAvatarFilePath)
-            if (userAvatarFileExists) {
-                await fs.promises.unlink(userAvatarFilePath)
-            }
+            await storageProvider.deleteFile(user.avatar)
         }
 
-        user.avatar = avatarFilename
+        const fileName = await storageProvider.saveFile(avatarFilename)
 
-        await userRepositoy.update(user_id, user)
+        user.avatar = fileName
+
+        await redisCache.invalidate('api-reference-USERS_LIST');
+
+        await userRepositoy.updateAvatar(user_id, user.avatar)
 
         return user
 

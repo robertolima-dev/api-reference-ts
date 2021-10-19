@@ -24,9 +24,17 @@ class UserRepositoy {
     }
 
     async update(id: any, data: any) {
+        console.log('update ===>',id, data)
         return await User.update(
             data,
             { where: { id: id }}
+        )
+    }
+
+    async updateAvatar(id: any, avatar: any) {
+        return await User.update(
+            { avatar: avatar },
+            { where: { id: id } }
         )
     }
 

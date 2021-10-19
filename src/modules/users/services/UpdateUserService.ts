@@ -1,6 +1,7 @@
 import AppError from "../../../middlewares/errors/AppError";
 import { User } from "../model/User";
 import UserRepositoy from "../repositories/sequelize/UserRepository";
+import redisCache from '../../../config/redis/RedisCache'
 
 interface IRequest {
     id: string
@@ -23,6 +24,8 @@ class UpdateUserService {
         const data = {
             name, email, phone
         }
+
+        await redisCache.invalidate('api-reference-USERS_LIST')
 
         await userRepositoy.update(id, data)
 
